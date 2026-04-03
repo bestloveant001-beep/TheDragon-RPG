@@ -1,79 +1,25 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Dragon RPG - ระบบแยกไฟล์สมบูรณ์</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<!-- เพิ่มในหน้า Game Screen ต่อจากปุ่มเดิม -->
+<div class="status-box" style="border-color: #3498db; margin-top: 10px;">
+    <div style="font-size: 0.8rem;">🏰 ตำหนักปัจจุบัน: <span id="p-mansion" style="color:#3498db">เพิงพักไม้</span></div>
+</div>
 
-    <div id="loading-screen" class="screen active">
-        <h2 style="color:var(--gold)">🐉 THE DRAGON RPG</h2>
-        <div id="loader">กำลังเชื่อมต่อฐานข้อมูลสำนัก... <span id="load-pc">0%</span></div>
-    </div>
+<!-- ส่วน World Boss UI (ซ่อนไว้ก่อน) -->
+<div id="world-boss-ui" style="display:none; background:rgba(255,0,0,0.1); border:2px solid red; padding:10px; border-radius:10px; margin-bottom:10px; animation: pulse 2s infinite;">
+    <div style="color:red; font-weight:bold; text-align:center;">🔥 WORLD BOSS: เทพมังกรบรรพกาล 🔥</div>
+    <div class="bar-bg"><div id="boss-bar" style="width:100%; height:100%; background:red;"></div></div>
+    <div id="boss-hp-text" style="font-size:0.7rem; text-align:center;">HP: 50000/50000</div>
+    <button onclick="attackWorldBoss()" style="width:100%; background:red; margin-top:5px;">รุมโจมตี!</button>
+</div>
 
-    <div id="login-screen" class="screen">
-        <h1 style="color:var(--red)">เข้าสู่ยุทธภพ</h1>
-        <div class="login-box">
-            <input type="text" id="uid" placeholder="UID (ชื่อผู้ใช้งาน)">
-            <input type="password" id="pid" placeholder="PID (รหัสผ่าน)">
-            <button onclick="handleAuth()" style="background:var(--red); width:100%">ยืนยันตัวตน</button>
-        </div>
-    </div>
+<div class="grid">
+    <button style="background:#2c3e50;" onclick="document.getElementById('mansion-modal').style.display='block'">🏰 ซื้อตำหนัก</button>
+    <button style="background:#e74c3c;" onclick="spawnWorldBoss()">🐲 เรียกบอส (Admin)</button>
+</div>
 
-    <div id="game-screen" class="screen">
-        <div class="status-box">
-            <h2 id="p-name" style="color:var(--gold); margin:0;">จอมยุทธ์</h2>
-            <span id="p-admin-tag" style="color:#e74c3c; font-weight:bold; display:none;">[ADMIN]</span>
-            <div style="color:#2ecc71">💰 ทอง: <span id="p-coin">0</span> Gold</div>
-            <div id="p-rank-text">ระดับ: ขั้น 1</div>
-            <div class="bar-bg"><div id="exp-bar" style="width:0%; height:100%; background:var(--blue);"></div></div>
-        </div>
-        <div class="grid">
-            <button style="background:var(--gold); color:black;" onclick="train()">🧘 บ่มเพาะ</button>
-            <button style="background:var(--blue);" onclick="openShop()">🛒 ร้านค้า</button>
-            <button style="background:var(--purple);" onclick="toggleAdmin()">🛠️ แอดมิน</button>
-        </div>
-        <div id="log">> ระบบพร้อม...</div>
-    </div>
-
-    <!-- หน้าต่างร้านค้า -->
-    <div id="overlay" class="overlay" onclick="closeShop()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99;"></div>
-    <div id="shop-modal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; background:#111; border:2px solid var(--gold); padding:20px; z-index:100; border-radius:15px;">
-        <h3 style="color:var(--gold)">🛒 ร้านค้าเซียน</h3>
-        <button onclick="buyItem('medicine', 100)" style="width:100%; margin-bottom:5px;">ซื้อยาทิพย์ (100 G)</button>
-        <button onclick="closeShop()" style="width:100%; background:#555;">ปิด</button>
-    </div>
-
-    <!-- แผงแอดมิน -->
-    <div id="admin-panel" style="display:none; background:#222; border:1px solid red; padding:10px; margin-top:10px; width:100%;">
-        <button onclick="addCoin(5000)">+5000 ทอง</button>
-    </div>
-
-    <!-- เรียกใช้ไฟล์ระบบหลัก -->
-    <script src="script.js"></script> 
-    <script>
-        // โหลดหน้าจอ
-        let lp = 0;
-        let iv = setInterval(() => {
-            lp += 20;
-            document.getElementById('load-pc').innerText = lp + "%";
-            if(lp >= 100) { 
-                clearInterval(iv);
-                document.getElementById('loading-screen').classList.remove('active');
-                document.getElementById('login-screen').classList.add('active');
-            }
-        }, 200);
-
-        function train() {
-            p.exp += 25;
-            p.coin += 50;
-            if(p.exp >= 100) { p.rank++; p.exp = 0; }
-            updateUI();
-            saveData();
-            addLog("🧘 บ่มเพาะสำเร็จ!");
-        }
-    </script>
-</body>
-</html>
+<!-- Modal เลือกซื้อตำหนัก -->
+<div id="mansion-modal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:85%; background:#111; border:2px solid #3498db; padding:20px; z-index:1000; border-radius:15px;">
+    <h3 style="color:#3498db">🏰 เลือกซื้อที่พำนักเซียน</h3>
+    <button onclick="buyMansion('ตำหนักเมฆา', 500000, 5)" style="width:100%; margin-bottom:5px;">ตำหนักเมฆา (5แสน G / +5 EXP อัตโนมัติ)</button>
+    <button onclick="buyMansion('วังมังกรทอง', 2000000, 20)" style="width:100%; margin-bottom:5px;">วังมังกรทอง (2ล้าน G / +20 EXP อัตโนมัติ)</button>
+    <button onclick="document.getElementById('mansion-modal').style.display='none'" style="width:100%; background:#555;">ปิด</button>
+</div>
