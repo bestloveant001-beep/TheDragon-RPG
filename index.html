@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Dragon RPG - Admin Edition</title>
     <style>
-        /* รวม CSS ไว้ที่นี่เพื่อป้องกันปัญหาไฟล์ไม่โหลด */
         :root { --gold: #f1c40f; --red: #e74c3c; --dark: #0a0a0a; --blue: #3498db; --purple: #9b59b6; }
         body { margin: 0; background-color: var(--dark); color: #fff; font-family: 'Sarabun', sans-serif; display: flex; justify-content: center; min-height: 100vh; }
         .screen { display: none; width: 100%; max-width: 450px; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; background: #1a1a1a; border: 2px solid #333; border-radius: 20px; margin-top: 20px; }
@@ -16,73 +15,111 @@
         button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: #444; transition: 0.2s; }
         button:hover { transform: scale(1.02); filter: brightness(1.2); }
         #log { width: 100%; height: 100px; background: #000; padding: 10px; font-size: 0.8rem; color: #2ecc71; overflow-y: auto; border: 1px solid #333; border-radius: 8px; margin-top: 10px; }
-        .scenario-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: #1a1a1a; border: 3px double var(--gold); padding: 20px; z-index: 2000; border-radius: 20px; text-align: center; box-shadow: 0 0 50px #000; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999; }
+        input { width: 80%; padding: 12px; margin-bottom: 10px; background: #000; color: #fff; border: 1px solid var(--gold); border-radius: 5px; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: #1a1a1a; border: 2px solid var(--gold); padding: 20px; z-index: 101; border-radius: 15px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- หน้าจอล็อคอิน -->
+    <!-- 1. หน้าจอล็อคอิน -->
     <div id="login-screen" class="screen active">
         <h1 style="color:var(--red)">🐲 THE DRAGON RPG</h1>
-        <div style="width:100%; text-align:center;">
-            <input type="text" id="uid" placeholder="ชื่อจอมยุทธ์" style="width:80%; padding:10px; margin-bottom:10px; background:#000; color:#fff; border:1px solid var(--gold);">
-            <input type="password" id="pid" placeholder="รหัสผ่าน" style="width:80%; padding:10px; margin-bottom:10px; background:#000; color:#fff; border:1px solid var(--gold);">
-            <button onclick="handleAuth()" style="width:85%; background:var(--red)">เข้าสู่ยุทธภพ</button>
-        </div>
+        <input type="text" id="uid" placeholder="ชื่อจอมยุทธ์">
+        <input type="password" id="pid" placeholder="รหัสผ่าน">
+        <button onclick="handleAuth()" style="width:85%; background:var(--red)">เข้าสู่ยุทธภพ</button>
     </div>
 
-    <!-- หน้าจอเกมหลัก -->
+    <!-- 2. หน้าจอเกมหลัก -->
     <div id="game-screen" class="screen">
         <div class="status-box">
             <div style="display:flex; justify-content:space-between">
-                <h2 id="p-name" style="color:var(--gold); margin:0;">จอมยุทธ์</h2>
+                <h2 id="disp-name" style="color:var(--gold); margin:0;">จอมยุทธ์</h2>
                 <span id="p-admin-tag" style="color:var(--red); font-weight:bold; display:none;">[ADMIN]</span>
             </div>
-            <div style="color:#2ecc71; font-weight:bold;">💰 ทอง: <span id="p-coin">0</span> Gold</div>
-            <div id="p-rank-text" style="margin-top:5px;">ระดับ: ขั้น 1</div>
+            <div style="color:#2ecc71">💰 ทอง: <span id="p-coin">0</span> Gold</div>
+            <div id="p-rank-text">ระดับ: ขั้น 1</div>
             <div class="bar-bg"><div id="exp-bar" style="width:0%; height:100%; background:var(--blue);"></div></div>
         </div>
 
         <div class="grid">
             <button style="background:var(--gold); color:black;" onclick="train()">🧘 บ่มเพาะ</button>
-            <button style="background:var(--blue);" onclick="triggerScenario()">🎲 ผจญภัย</button>
+            <button style="background:var(--blue);" onclick="alert('ระบบผจญภัยกำลังเตรียมการ...')">🎲 ผจญภัย</button>
             <button style="background:var(--purple); grid-column: span 2;" onclick="toggleAdmin()">🛠️ แผงควบคุมแอดมิน</button>
         </div>
 
-        <div id="admin-panel" style="display:none; width:100%; margin-top:10px; background:#333; padding:10px; border-radius:8px; box-sizing:border-box;">
-            <button onclick="addCoin(1000000)" style="font-size:0.7rem;">+1M Gold</button>
-            <button onclick="p.rank++; updateUI(); saveData();" style="font-size:0.7rem;">+1 Level</button>
+        <div id="admin-panel" style="display:none; width:100%; margin-top:10px; background:#333; padding:10px; border-radius:8px; box-sizing:border-box; text-align:center;">
+            <button onclick="addCoin(1000000)">+1M Gold</button>
+            <button onclick="p.rank++; updateUI(); saveData();">+1 Level</button>
         </div>
 
-        <div id="log">> ยินดีต้อนรับท่านจอมยุทธ์</div>
+        <div id="log">> ระบบเริ่มต้นเรียบร้อย</div>
     </div>
 
-    <!-- ระบบสถานการณ์จำลอง -->
-    <div id="overlay" class="overlay"></div>
-    <div id="scenario-modal" class="scenario-box">
-        <div id="scenario-img" style="font-size:3rem;">🐲</div>
-        <h2 id="scenario-title" style="color:var(--gold)">เกิดเหตุการณ์!</h2>
-        <p id="scenario-desc" style="color:#ccc">...</p>
-        <div id="scenario-choices"></div>
-    </div>
-
-    <script src="script.js"></script>
     <script>
-        // ฟังก์ชันบ่มเพาะแบบด่วน
-        function train() {
-            p.exp += 25; p.coin += 1000;
-            if(p.exp >= 100) { p.rank++; p.exp = 0; addLog("⚡ เลื่อนระดับ!"); }
-            updateUI(); saveData(); addLog("🧘 บ่มเพาะพลัง...");
+        // ข้อมูลตัวละคร
+        let p = { name: "", rank: 1, exp: 0, coin: 0, isAdmin: false };
+
+        // ฟังก์ชันล็อคอิน
+        function handleAuth() {
+            let u = document.getElementById('uid').value;
+            let pass = document.getElementById('pid').value;
+
+            if (u === "admin" && pass === "1234") {
+                p.isAdmin = true;
+                p.coin = 999999;
+                p.name = "admin";
+            } else if (u) {
+                p.name = u;
+            } else {
+                return alert("กรุณาใส่ชื่อ!");
+            }
+
+            document.getElementById('disp-name').innerText = "ท่าน " + p.name;
+            if(p.isAdmin) document.getElementById('p-admin-tag').style.display = 'inline';
+            
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            updateUI();
+            addLog("🐉 เข้าสู่โลกจอมยุทธ์สำเร็จ!");
         }
 
-        // ระบบ Admin
+        function train() {
+            p.exp += 20; p.coin += 500;
+            if(p.exp >= 100) { p.rank++; p.exp = 0; addLog("⚡ เลื่อนระดับ!"); }
+            updateUI();
+            saveData();
+            addLog("🧘 ท่านบ่มเพาะพลังสำเร็จ");
+        }
+
         function toggleAdmin() {
+            if(!p.isAdmin) return alert("เฉพาะแอดมิน!");
             let panel = document.getElementById('admin-panel');
             panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
         }
 
-        function addCoin(amt) { p.coin += amt; updateUI(); saveData(); addLog("🛠️ เสกทอง!"); }
+        function addCoin(amt) { p.coin += amt; updateUI(); saveData(); addLog("🛠️ ADMIN: เสกทอง!"); }
+
+        function updateUI() {
+            document.getElementById('p-coin').innerText = p.coin.toLocaleString();
+            document.getElementById('p-rank-text').innerText = "ระดับ: ขั้น " + p.rank;
+            document.getElementById('exp-bar').style.width = p.exp + "%";
+        }
+
+        function saveData() { localStorage.setItem('dragon_save', JSON.stringify(p)); }
+        function addLog(msg) {
+            let log = document.getElementById('log');
+            log.innerHTML = `> ${msg}<br>` + log.innerHTML;
+        }
+
+        // โหลดข้อมูลเก่าถ้ามี
+        window.onload = () => {
+            let saved = localStorage.getItem('dragon_save');
+            if(saved) {
+                let data = JSON.parse(saved);
+                document.getElementById('uid').value = data.name;
+            }
+        }
     </script>
 </body>
 </html>
