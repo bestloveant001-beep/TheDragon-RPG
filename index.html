@@ -4,47 +4,108 @@
     <meta charset="UTF-8">
     <title>วิถีแห่งเซียน - The Dragon RPG</title>
     <style>
-        body { margin: 0; background-color: #0d0d0d; color: #f1c40f; font-family: 'Sarabun', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1000'); background-size: cover; }
-        .sect-container { text-align: center; border: 3px double #d35400; padding: 30px; background: rgba(20, 20, 20, 0.9); border-radius: 10px; box-shadow: 0 0 25px #d35400; width: 90%; max-width: 450px; }
-        h1 { font-size: 2.5rem; color: #e74c3c; text-shadow: 2px 2px #000; margin-bottom: 5px; }
-        .status-panel { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #d35400; margin-bottom: 20px; text-align: left; }
-        .btn-action { width: 100%; padding: 12px; margin: 5px 0; background: #96281b; color: white; border: 1px solid #f1c40f; cursor: pointer; font-weight: bold; border-radius: 4px; }
-        #event-log { height: 120px; background: #000; padding: 10px; font-size: 0.85rem; color: #2ecc71; overflow-y: auto; border-radius: 5px; margin-top: 15px; text-align: left; }
+        body { margin: 0; background-color: #0d0d0d; color: #f1c40f; font-family: 'Sarabun', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1000'); background-size: cover; }
+        .sect-container { text-align: center; border: 3px double #d35400; padding: 20px; background: rgba(20, 20, 20, 0.95); border-radius: 15px; box-shadow: 0 0 25px #d35400; width: 90%; max-width: 400px; }
+        h1 { font-size: 2rem; color: #e74c3c; text-shadow: 2px 2px #000; margin-bottom: 5px; }
+        .status-panel { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #d35400; margin-bottom: 15px; text-align: left; line-height: 1.6; }
+        .hp-bar-bg { width: 100%; height: 10px; background: #444; border-radius: 5px; margin-top: 5px; overflow: hidden; }
+        #hp-bar { width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-action { padding: 12px; background: #96281b; color: white; border: 1px solid #f1c40f; cursor: pointer; font-weight: bold; border-radius: 6px; transition: 0.2s; }
+        .btn-action:hover { background: #c0392b; transform: scale(1.03); }
+        .btn-special { background: #2980b9; border-color: #3498db; }
+        #event-log { height: 150px; background: #000; padding: 10px; font-size: 0.85rem; color: #2ecc71; overflow-y: auto; border-radius: 5px; margin-top: 15px; text-align: left; border: 1px solid #333; }
     </style>
 </head>
 <body>
+
 <div class="sect-container">
     <h1>วิถีแห่งเซียน</h1>
     <div class="status-panel">
         <div>🧧 สำนัก: <span id="sectName" style="color:#e67e22;">พเนจร</span></div>
         <div>🌟 ระดับ: <span id="rank" style="color:#f1c40f;">รวบรวมปราณ ขั้น 1</span></div>
-        <div>🧪 ปราณบ่มเพาะ: <span id="exp">0</span> / 100</div>
+        <div>❤️ เลือด (HP): <span id="hpText">100</span>/100</div>
+        <div class="hp-bar-bg"><div id="hp-bar"></div></div>
+        <div style="margin-top:5px;">🧪 ปราณบ่มเพาะ: <span id="exp">0</span> / 100</div>
     </div>
-    <button class="btn-action" onclick="cultivate()">🧘 บ่มเพาะพลังปราณ</button>
-    <button class="btn-action" onclick="adventure()">⛰️ ออกท่องยุทธภพ</button>
-    <div id="event-log">📜 เริ่มต้นการเดินทางของจอมยุทธ์...</div>
+
+    <div class="btn-grid">
+        <button class="btn-action" onclick="cultivate()">🧘 บ่มเพาะ</button>
+        <button class="btn-action" onclick="adventure()">⛰️ ท่องยุทธภพ</button>
+        <button class="btn-action btn-special" onclick="battle()">⚔️ ประลองยุทธ์</button>
+        <button class="btn-action btn-special" onclick="heal()">💊 กินยาทิพย์</button>
+    </div>
+
+    <div id="event-log">📜 ยินดีต้อนรับจอมยุทธ์! เริ่มต้นการเดินทางได้...</div>
 </div>
+
 <script>
-    let exp = 0; let rankLevel = 1; let sect = "พเนจร";
+    let hp = 100;
+    let maxHp = 100;
+    let exp = 0;
+    let rankLevel = 1;
+    let atk = 10;
+
     function updateDisplay() {
+        document.getElementById('hpText').innerText = hp;
         document.getElementById('exp').innerText = exp;
         document.getElementById('rank').innerText = "รวบรวมปราณ ขั้น " + rankLevel;
+        let hpPercent = (hp / maxHp) * 100;
+        document.getElementById('hp-bar').style.width = hpPercent + "%";
+        // เปลี่ยนสีเลือดถ้าเหลือน้อย
+        document.getElementById('hp-bar').style.background = hpPercent < 30 ? "#e74c3c" : "#2ecc71";
     }
+
     function cultivate() {
-        let gain = Math.floor(Math.random() * 15) + 5;
+        if (hp <= 10) return addLog("❌ เลือดน้อยเกินไป บ่มเพาะไม่ได้!");
+        let gain = Math.floor(Math.random() * 10) + 5;
         exp += gain;
-        addLog(`🧘 คุณโคจรพลัง... ได้รับปราณ ${gain} หน่วย`);
-        if (exp >= 100) { rankLevel++; exp = 0; addLog(`⚡ เลื่อนระดับ! ตอนนี้คุณอยู่ขั้น ${rankLevel} แล้ว!`); }
+        addLog(`🧘 โคจรพลัง... ได้รับปราณ ${gain} หน่วย`);
+        if (exp >= 100) {
+            rankLevel++; exp = 0; atk += 5; maxHp += 20; hp = maxHp;
+            addLog(`⚡ เลื่อนระดับ! ขั้น ${rankLevel} พลังเพิ่มขึ้น!`);
+        }
         updateDisplay();
     }
-    function adventure() {
-        addLog(`👣 คุณเดินหลงป่า แต่โชคดีที่เก็บสมุนไพรวิเศษได้ (+10 EXP)`);
-        exp += 10; updateDisplay();
+
+    function battle() {
+        if (hp <= 20) return addLog("❌ เลือดน้อยเกินไป อย่าเพิ่งไปสู้เลย!");
+        let monsters = ["โจรป่า", "งูยักษ์", "ศิษย์สำนักมาร", "ลูกน้องมังกร"];
+        let m = monsters[Math.floor(Math.random() * monsters.length)];
+        let damage = Math.floor(Math.random() * 20) + 10;
+        hp -= damage;
+        if (hp < 0) hp = 0;
+        let winExp = 25;
+        exp += winExp;
+        addLog(`⚔️ ปะทะกับ [${m}]! ชนะได้รับปราณ ${winExp} แต่เสียเลือด ${damage}`);
+        updateDisplay();
     }
+
+    function heal() {
+        if (hp >= maxHp) return addLog("✨ เลือดเต็มอยู่แล้ว ไม่ต้องกินยา");
+        hp += 30;
+        if (hp > maxHp) hp = maxHp;
+        addLog(`💊 กินยาทิพย์... ฟื้นฟูเลือด 30 หน่วย`);
+        updateDisplay();
+    }
+
+    function adventure() {
+        let events = [
+            "👣 เดินชมวิวเฉยๆ ไม่เจออะไร",
+            "🍎 เจอผลไม้เซียน! ได้รับปราณ 15 หน่วย",
+            "💰 เจอถุงเงินเก่าๆ เก็บได้ 5 Gold"
+        ];
+        let ev = events[Math.floor(Math.random() * events.length)];
+        if (ev.includes("ปราณ")) exp += 15;
+        addLog(ev);
+        updateDisplay();
+    }
+
     function addLog(msg) {
         let log = document.getElementById('event-log');
         log.innerHTML = `> ${msg}<br>` + log.innerHTML;
     }
 </script>
+
 </body>
 </html>
