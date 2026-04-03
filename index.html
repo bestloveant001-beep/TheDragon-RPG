@@ -3,183 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Dragon RPG: Path to Divinity</title>
-    <style>
-        :root { --gold: #f1c40f; --red: #e74c3c; --dark: #0a0a0a; --blue: #3498db; --purple: #9b59b6; }
-        body { margin: 0; background: var(--dark); color: #fff; font-family: 'Sarabun', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .screen { display: none; width: 100%; max-width: 450px; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; background: radial-gradient(circle, #1a0000 0%, #000 100%); border: 2px solid #333; border-radius: 20px; margin: 10px; }
-        .active { display: flex; }
-
-        /* UI Elements */
-        .status-box { width: 100%; background: rgba(30,30,30,0.9); padding: 15px; border-radius: 12px; border: 1px solid var(--gold); margin-bottom: 15px; box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
-        .bar-bg { width: 100%; height: 12px; background: #222; border-radius: 6px; margin: 5px 0; overflow: hidden; border: 1px solid #444; }
-        #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #2ecc71, #27ae60); transition: 0.3s; }
-        #exp-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); transition: 0.3s; }
-        #boss-bar { width: 100%; height: 100%; background: linear-gradient(90deg, var(--red), #c0392b); }
-
-        /* Mini Map with Pet */
-        .map-area { width: 150px; height: 100px; background: #111; border: 2px solid var(--gold); border-radius: 10px; position: relative; margin-bottom: 15px; overflow: hidden; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; position: absolute; transition: 0.5s; }
-        #player-dot { background: cyan; box-shadow: 0 0 10px cyan; z-index: 2; }
-        #pet-dot { background: var(--gold); box-shadow: 0 0 10px var(--gold); display: none; z-index: 1; }
-
-        /* Buttons */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
-        .btn-red { background: var(--red); }
-        .btn-gold { background: var(--gold); color: black; }
-        .btn-blue { background: var(--blue); }
-        .btn-purple { background: var(--purple); }
-        button:hover { transform: scale(1.05); filter: brightness(1.2); }
-
-        #log { width: 100%; height: 100px; background: #000; padding: 10px; font-size: 0.8rem; color: #2ecc71; overflow-y: auto; border: 1px solid #333; margin-top: 15px; border-radius: 8px; box-sizing: border-box; }
-        .weapon-tag { font-size: 0.8rem; color: var(--gold); font-weight: bold; }
-    </style>
+    <title>The Dragon RPG - ระบบแยกไฟล์</title>
+    <link rel="stylesheet" href="style.css"> <!-- ดึงดีไซน์จากไฟล์สไตล์ -->
 </head>
 <body>
 
-    <!-- หน้า Login -->
-    <div id="login-screen" class="screen active">
-        <h1 style="color:var(--red)">THE DRAGON RPG</h1>
-        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; width: 80%;">
-            <input type="text" id="uid" placeholder="UID (ชื่อจอมยุทธ์)" style="width:100%; padding:10px; margin-bottom:10px; background:#222; color:#fff; border:1px solid var(--gold); border-radius:5px;">
-            <input type="password" id="pid" placeholder="PID (รหัสลับ)" style="width:100%; padding:10px; margin-bottom:20px; background:#222; color:#fff; border:1px solid var(--gold); border-radius:5px;">
-            <button class="btn-red" style="width:100%" onclick="login()">เข้าสู่ยุทธภพ</button>
+    <!-- 1. หน้าโหลด (Loading Screen) -->
+    <div id="loading-screen" class="screen active">
+        <div id="loader">🏮 กำลังรวบรวมลมปราณ...</div>
+    </div>
+
+    <!-- 2. หน้าล็อคอิน (Login Screen) -->
+    <div id="login-screen" class="screen">
+        <h1 style="color:var(--red)">เข้าสู่ยุทธภพ</h1>
+        <div class="login-box">
+            <input type="text" id="uid" placeholder="UID (ชื่อจอมยุทธ์)">
+            <input type="password" id="pid" placeholder="PID (รหัสลับ)">
+            <button style="background:var(--red); width:100%" onclick="login()">เริ่มต้นการเดินทาง</button>
         </div>
     </div>
 
-    <!-- หน้า Game -->
+    <!-- 3. หน้าเกมหลัก (Game Screen) -->
     <div id="game-screen" class="screen">
-        <div class="map-area">
-            <div id="player-dot" class="dot" style="top:50%; left:50%;"></div>
-            <div id="pet-dot" class="dot"></div>
-            <div style="position:absolute; bottom:2px; width:100 text-align:center; font-size:0.5rem; color:var(--gold)">📍 MINI MAP</div>
-        </div>
-
         <div class="status-box">
-            <div style="display:flex; justify-content:space-between">
-                <span id="p-name" style="color:var(--gold)">จอมยุทธ์</span>
-                <span id="p-rebirth" style="color:var(--red); font-weight:bold;"></span>
-            </div>
-            <div id="p-rank" style="font-size:0.9rem">รวบรวมปราณ ขั้น 1</div>
-            <div class="weapon-tag">⚔️ อาวุธ: <span id="p-weapon">มือเปล่า</span></div>
-            
-            <div style="font-size:0.7rem; margin-top:10px;">HP: <span id="p-hp-text">100/100</span></div>
+            <h2 id="p-name" style="color:var(--gold); margin:0;">จอมยุทธ์</h2>
+            <div id="p-rank">รวบรวมปราณ ขั้น 1</div>
             <div class="bar-bg"><div id="hp-bar"></div></div>
-            
-            <div style="font-size:0.7rem; margin-top:5px;">ปราณบ่มเพาะ: <span id="p-exp-text">0/100</span></div>
-            <div class="bar-bg"><div id="exp-bar"></div></div>
         </div>
-
-        <!-- Boss -->
-        <div id="boss-ui" style="display:none; width:100%; margin-bottom:15px; border:1px solid var(--red); padding:10px; border-radius:10px; background:rgba(231, 76, 60, 0.1)">
-            <div style="color:var(--red); font-weight:bold">🐲 มหาเทพมังกรโบราณ</div>
-            <div class="bar-bg"><div id="boss-bar"></div></div>
-            <div id="boss-hp-text" style="font-size:0.7rem; text-align:right">HP: 10000/10000</div>
-        </div>
-
         <div class="grid">
-            <button class="btn-gold" onclick="action('cultivate')">🧘 บ่มเพาะ</button>
-            <button class="btn-blue" onclick="action('move')">🚶 เดินสำรวจ</button>
-            <button class="btn-purple" onclick="showGacha()">💎 สุ่มกาชา</button>
-            <button class="btn-red" onclick="spawnBoss()">🐉 ท้าทายบอส</button>
-            <button id="atk-btn" class="btn-red" style="display:none; grid-column: span 2; margin-top:5px; background:linear-gradient(45deg, #ff416c, #ff4b2b)" onclick="attackBoss()">⚔️ โจมตีมหาเทพมังกร!</button>
-            <button id="rebirth-btn" class="btn-gold" style="display:none; grid-column: span 2; margin-top:5px;" onclick="rebirth()">🔥 จุติใหม่ (Level 50+)</button>
+            <button style="background:var(--gold); color:black;" onclick="action()">🧘 บ่มเพาะ</button>
+            <button style="background:var(--blue);" onclick="alert('ระบบกำลังพัฒนา...')">🚶 เดินสำรวจ</button>
         </div>
-
-        <div id="log">> ระบบพร้อม...</div>
+        <div id="log">> เข้าสู่เกมสำเร็จ</div>
     </div>
 
     <script>
-        let p = { name: "จอมยุทธ์", hp: 100, mHp: 100, exp: 0, rank: 1, atk: 20, weapon: "มือเปล่า", weaponAtk: 0, rebirths: 0, hasPet: false };
-        let b = { hp: 10000, mHp: 10000, active: false };
-        const weapons = [
-            {n: "กระบี่ไม้", a: 10, r: "ทั่วไป"}, {n: "ดาบเหล็กดำ", a: 50, r: "หายาก"},
-            {n: "ทวนมังกรฟ้า", a: 200, r: "มหากาพย์"}, {n: "กระบี่เซียนเทพปราบมังกร", a: 1000, r: "ตำนาน"}
-        ];
+        // ระบบจำลองการโหลด
+        setTimeout(() => {
+            document.getElementById('loading-screen').classList.remove('active');
+            document.getElementById('login-screen').classList.add('active');
+        }, 2000); // โหลด 2 วินาที
 
         function login() {
             let u = document.getElementById('uid').value;
-            if(u) { p.name = u; document.getElementById('p-name').innerText = "ท่าน " + u; showScreen('game-screen'); }
-            else alert("ใส่ชื่อด้วยท่านจอมยุทธ์!");
+            if(u) {
+                document.getElementById('p-name').innerText = "ท่าน " + u;
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('game-screen').classList.add('active');
+            } else { alert("กรุณาใส่ชื่อ!"); }
         }
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function action(t) {
-            if(t==='cultivate') {
-                let g = 20 + (p.rebirths * 50); p.exp += g;
-                addLog(`🧘 บ่มเพาะ... ได้ปราณ ${g}`);
-                if(p.exp >= 100) { p.rank++; p.exp=0; p.mHp+=100; p.hp=p.mHp; p.atk+=20; addLog(`⚡ เลื่อนระดับเป็นขั้น ${p.rank}!`); }
-                if(p.rank >= 50) document.getElementById('rebirth-btn').style.display = 'block';
-            } else if(t==='move') {
-                let x = Math.random()*85; let y = Math.random()*85;
-                document.getElementById('player-dot').style.left = x+"%"; document.getElementById('player-dot').style.top = y+"%";
-                if(p.hasPet) { 
-                    document.getElementById('pet-dot').style.left = (x+5)+"%"; 
-                    document.getElementById('pet-dot').style.top = (y+5)+"%"; 
-                }
-                addLog("🚶 ท่องยุทธภพ...");
-            } else if(t==='heal') { p.hp = p.mHp; addLog("💊 ฟื้นฟูพลัง!"); }
-            updateUI();
-        }
-
-        function showGacha() {
-            let roll = Math.random();
-            if(roll < 0.05) { // 5% สัตว์เลี้ยง
-                p.hasPet = true; document.getElementById('pet-dot').style.display = 'block';
-                addLog("✨ ปาฏิหาริย์! มังกรทองจิ๋วเลือกติดตามท่าน!");
-            } else {
-                let w = weapons[Math.floor(Math.random()*weapons.length)];
-                p.weapon = w.n; p.weaponAtk = w.a;
-                addLog(`💎 กาชา: ท่านได้รับ [${w.n}] ระดับ ${w.r} (+พลังโจมตี ${w.a})`);
-            }
-            updateUI();
-        }
-
-        function spawnBoss() {
-            b.active = true; b.hp = b.mHp;
-            document.getElementById('boss-ui').style.display = 'block';
-            document.getElementById('atk-btn').style.display = 'block';
-            addLog("⚠️ มหาเทพมังกรตื่นจากการหลับใหล!");
-            updateUI();
-        }
-
-        function attackBoss() {
-            let totalAtk = p.atk + p.weaponAtk + (p.rebirths * 500);
-            b.hp -= totalAtk;
-            p.hp -= (25 + Math.random()*20);
-            addLog(`⚔️ โจมตีมังกร! สร้างความเสียหาย ${totalAtk}`);
-            if(b.hp <= 0) { b.hp=0; b.active=false; addLog("🏆 สังหารมหาเทพมังกรสำเร็จ! ท่านคือผู้เหนือเซียน!"); }
-            if(p.hp <= 0) { p.hp=0; alert("💀 ท่านพ่ายแพ้..."); location.reload(); }
-            updateUI();
-        }
-
-        function rebirth() {
-            p.rebirths++; p.rank = 1; p.mHp = 100; p.hp = 100; p.atk = 20; p.exp = 0;
-            document.getElementById('rebirth-btn').style.display = 'none';
-            addLog(`🔥 จุติใหม่ครั้งที่ ${p.rebirths}! พลังพื้นฐานเพิ่มขึ้นมหาศาล!`);
-            updateUI();
-        }
-
-        function updateUI() {
-            document.getElementById('p-hp-text').innerText = `${Math.floor(p.hp)}/${p.mHp}`;
-            document.getElementById('hp-bar').style.width = (p.hp/p.mHp)*100 + "%";
-            document.getElementById('p-exp-text').innerText = `${p.exp}/100`;
-            document.getElementById('exp-bar').style.width = p.exp + "%";
-            document.getElementById('p-rank').innerText = `รวบรวมปราณ ขั้น ${p.rank}`;
-            document.getElementById('p-weapon').innerText = p.weapon;
-            document.getElementById('p-rebirth').innerText = p.rebirths > 0 ? `จุติ x${p.rebirths}` : "";
-            document.getElementById('boss-hp-text').innerText = `HP: ${Math.floor(b.hp)}/${b.mHp}`;
-            document.getElementById('boss-bar').style.width = (b.hp/b.mHp)*100 + "%";
-        }
-
-        function addLog(msg) {
-            let l = document.getElementById('log');
-            l.innerHTML = `> ${msg}<br>` + l.innerHTML;
+        function action() {
+            let log = document.getElementById('log');
+            log.innerHTML = "> บ่มเพาะพลังสำเร็จ!<br>" + log.innerHTML;
         }
     </script>
 </body>
