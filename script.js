@@ -1,107 +1,74 @@
-// ข้อมูลตัวละคร (เพิ่มระบบตำหนักและบอส)
-let p = { 
-    name: "", pass: "", rank: 1, exp: 0, coin: 0, 
-    isAdmin: false, mansion: "เพิงพักไม้", autoExp: 0 
-};
-
-let boss = { hp: 50000, mHp: 50000, active: false };
-
-// --- 1. ระบบ Login & Register ---
-function handleAuth() {
-    let u = document.getElementById('uid').value;
-    let pass = document.getElementById('pid').value;
-    if(!u || !pass) return alert("กรุณากรอกข้อมูล!");
-
-    if(u === "admin" && pass === "1234") {
-        p.isAdmin = true;
-        p.coin = 9999999;
+// รายชื่อสถานการณ์จำลอง
+const scenarios = [
+    {
+        img: "🧓",
+        title: "พบขอทานชรา",
+        desc: "ท่านพบขอทานชรานั่งอยู่ข้างทาง เขาขอเศษเงินท่าน 500 Gold เพื่อซื้ออาหาร",
+        choices: [
+            { text: "ให้เงิน 500 Gold (เมตตา)", action: () => { 
+                if(p.coin >= 500) { p.coin -= 500; p.exp += 100; addLog("✨ ท่านได้รับพรจากผู้เฒ่า! EXP +100"); }
+                else { alert("ทองไม่พอ!"); return false; }
+            }},
+            { text: "เดินหนี (เย็นชา)", action: () => { addLog("👣 ท่านเดินจากไปอย่างเงียบๆ"); }}
+        ]
+    },
+    {
+        img: "⚔️",
+        title: "โจรป่าดักซุ่ม",
+        desc: "มีกลุ่มโจรดักซุ่มโจมตีท่านระหว่างเดินทาง!",
+        choices: [
+            { text: "เข้าปะทะ (สู้ตาย)", action: () => { 
+                p.coin += 2000; p.exp += 50; addLog("⚔️ ชนะโจรป่า! ได้รับ 2,000 Gold"); 
+            }},
+            { text: "จ่ายเงินค่าผ่านทาง (1,000 Gold)", action: () => { 
+                if(p.coin >= 1000) { p.coin -= 1000; addLog("💸 เสียเงินฟาดหัวโจรไป 1,000 Gold"); }
+                else { alert("ทองไม่พอต้องสู้!"); return false; }
+            }}
+        ]
+    },
+    {
+        img: "📜",
+        title: "คัมภีร์ลับในถ้ำ",
+        desc: "ท่านพบถ้ำลับที่มีคัมภีร์เก่าแก่ตกอยู่ จะลองฝึกดูหรือไม่?",
+        choices: [
+            { text: "ลองฝึกตามคัมภีร์", action: () => { 
+                if(Math.random() > 0.5) { p.rank += 1; addLog("⚡ ท่านสำเร็จวิชาลับ! เลเวล +1"); }
+                else { p.exp -= 20; addLog("💢 ธาตุไฟเข้าแทรก! เสีย EXP นิดหน่อย"); }
+            }},
+            { text: "เผาทิ้งป้องกันมารร้าย", action: () => { p.coin += 5000; addLog("🔥 ท่านทำลายคัมภีร์และพบทองซ่อนอยู่ใต้กองไฟ!"); }}
+        ]
     }
-    p.name = u; p.pass = pass;
-    saveData();
-    enterGame();
-}
+];
 
-function enterGame() {
-    document.getElementById('p-name').innerText = "ท่าน " + p.name;
-    if(p.isAdmin) document.getElementById('p-admin-tag').style.display = 'inline';
-    startAutoCultivate(); // เริ่มระบบฟื้นฟูอัตโนมัติจากตำหนัก
-    updateUI();
-    document.getElementById('login-screen').classList.remove('active');
-    document.getElementById('game-screen').classList.add('active');
-}
-
-// --- 2. ระบบบ่มเพาะ & ตำหนัก (Auto EXP) ---
-function train() {
-    p.exp += (20 + (p.autoExp * 2));
-    p.coin += 100;
-    checkRank();
-    updateUI();
-}
-
-function startAutoCultivate() {
-    setInterval(() => {
-        if(p.autoExp > 0) {
-            p.exp += p.autoExp;
-            checkRank();
-            updateUI();
-        }
-    }, 3000); // เพิ่ม EXP ทุก 3 วินาทีตามระดับตำหนัก
-}
-
-function checkRank() {
-    if(p.exp >= 100) { p.rank++; p.exp = 0; addLog(`⚡ เลื่อนระดับเป็นขั้น ${p.rank}!`); saveData(); }
-}
-
-// --- 3. ระบบร้านค้า & อสังหาริมทรัพย์ ---
-function buyMansion(name, price, autoRate) {
-    if(p.coin >= price) {
-        p.coin -= price;
-        p.mansion = name;
-        p.autoExp = autoRate;
-        addLog(`🏰 ยินดีด้วย! ท่านซื้อ [${name}] สำเร็จ (ได้ EXP อัตโนมัติ +${autoRate})`);
-        updateUI();
-        saveData();
-    } else { alert("ทองไม่พอซื้อตำหนักนี้!"); }
-}
-
-// --- 4. ระบบ World Boss (สำหรับ Admin เรียก) ---
-function spawnWorldBoss() {
-    if(!p.isAdmin) return alert("เฉพาะแอดมินที่เรียกบอสได้!");
-    boss.active = true;
-    boss.hp = boss.mHp;
-    document.getElementById('world-boss-ui').style.display = 'block';
-    addLog("⚠️ แอดมินเรียก [เทพมังกรบรรพกาล] ออกมาจุติ! ทุกคนรุมสู้เร็ว!");
-    updateUI();
-}
-
-function attackWorldBoss() {
-    let dmg = 500 + (p.rank * 10);
-    boss.hp -= dmg;
-    addLog(`⚔️ ท่านสร้างความเสียหายแก่บอส ${dmg} หน่วย!`);
-    if(boss.hp <= 0) {
-        boss.hp = 0; boss.active = false;
-        p.coin += 100000;
-        addLog("🏆 บอสถูกกำจัดแล้ว! ท่านได้รับรางวัล 100,000 Gold");
-        document.getElementById('world-boss-ui').style.display = 'none';
-    }
-    updateUI();
-}
-
-// --- ฟังก์ชันเสริม ---
-function updateUI() {
-    document.getElementById('p-coin').innerText = p.coin.toLocaleString();
-    document.getElementById('p-rank-text').innerText = "ระดับ: " + p.rank;
-    document.getElementById('p-mansion').innerText = p.mansion;
-    document.getElementById('exp-bar').style.width = p.exp + "%";
+// ฟังก์ชันสุ่มเรียกสถานการณ์
+function triggerScenario() {
+    const s = scenarios[Math.floor(Math.random() * scenarios.length)];
+    document.getElementById('scenario-title').innerText = s.title;
+    document.getElementById('scenario-img').innerText = s.img;
+    document.getElementById('scenario-desc').innerText = s.desc;
     
-    if(boss.active) {
-        document.getElementById('boss-hp-text').innerText = `BOSS HP: ${boss.hp}/${boss.mHp}`;
-        document.getElementById('boss-bar').style.width = (boss.hp/boss.mHp)*100 + "%";
-    }
+    const container = document.getElementById('scenario-choices');
+    container.innerHTML = ""; // ล้างปุ่มเก่า
+    
+    s.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = "choice-btn";
+        btn.innerText = choice.text;
+        btn.onclick = () => {
+            if(choice.action() !== false) {
+                closeScenario();
+                updateUI();
+                saveData();
+            }
+        };
+        container.appendChild(btn);
+    });
+    
+    document.getElementById('scenario-modal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
 }
 
-function saveData() { localStorage.setItem('dragon_user', JSON.stringify(p)); }
-function addLog(msg) {
-    let log = document.getElementById('log');
-    log.innerHTML = `> ${msg}<br>` + log.innerHTML;
+function closeScenario() {
+    document.getElementById('scenario-modal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
 }
