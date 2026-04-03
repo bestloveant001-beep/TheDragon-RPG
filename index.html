@@ -2,110 +2,172 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>วิถีแห่งเซียน - The Dragon RPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dragon RPG - จอมยุทธ์มังกร</title>
     <style>
-        body { margin: 0; background-color: #0d0d0d; color: #f1c40f; font-family: 'Sarabun', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1000'); background-size: cover; }
-        .sect-container { text-align: center; border: 3px double #d35400; padding: 20px; background: rgba(20, 20, 20, 0.95); border-radius: 15px; box-shadow: 0 0 25px #d35400; width: 90%; max-width: 400px; }
-        h1 { font-size: 2rem; color: #e74c3c; text-shadow: 2px 2px #000; margin-bottom: 5px; }
-        .status-panel { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #d35400; margin-bottom: 15px; text-align: left; line-height: 1.6; }
-        .hp-bar-bg { width: 100%; height: 10px; background: #444; border-radius: 5px; margin-top: 5px; overflow: hidden; }
-        #hp-bar { width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-action { padding: 12px; background: #96281b; color: white; border: 1px solid #f1c40f; cursor: pointer; font-weight: bold; border-radius: 6px; transition: 0.2s; }
-        .btn-action:hover { background: #c0392b; transform: scale(1.03); }
-        .btn-special { background: #2980b9; border-color: #3498db; }
-        #event-log { height: 150px; background: #000; padding: 10px; font-size: 0.85rem; color: #2ecc71; overflow-y: auto; border-radius: 5px; margin-top: 15px; text-align: left; border: 1px solid #333; }
+        :root { --gold: #f1c40f; --red: #e74c3c; --dark: #0d0d0d; }
+        body { margin: 0; background: var(--dark); color: #fff; font-family: 'Sarabun', sans-serif; overflow-x: hidden; }
+        
+        /* --- Screen Management --- */
+        .screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; background: radial-gradient(circle, #2c0000 0%, #000 100%); }
+        .active { display: flex; }
+
+        /* --- Login Box --- */
+        .login-box { background: rgba(20,20,20,0.9); padding: 30px; border: 2px solid var(--red); border-radius: 15px; box-shadow: 0 0 20px var(--red); text-align: center; width: 300px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; background: #222; color: #fff; border: 1px solid var(--gold); border-radius: 5px; }
+        button { width: 100%; padding: 12px; background: var(--red); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* --- Game Interface --- */
+        .game-header { width: 100%; max-width: 400px; background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 15px; }
+        .hp-bar-bg { width: 100%; height: 12px; background: #333; border-radius: 6px; margin: 5px 0; overflow: hidden; border: 1px solid #555; }
+        #hp-fill { width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
+        #boss-hp-fill { width: 100%; height: 100%; background: #9b59b6; transition: 0.3s; }
+
+        /* --- Mini Map --- */
+        .mini-map { width: 120px; height: 120px; background: #222; border: 2px solid var(--gold); border-radius: 10px; position: relative; margin-bottom: 15px; background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png'); }
+        .player-dot { width: 8px; height: 8px; background: cyan; border-radius: 50%; position: absolute; box-shadow: 0 0 5px cyan; transition: 0.5s; }
+
+        /* --- Boss Area --- */
+        .boss-box { display: none; width: 100%; max-width: 400px; background: rgba(150, 40, 27, 0.2); border: 1px solid var(--red); padding: 10px; border-radius: 10px; margin-bottom: 15px; animation: shake 0.5s infinite alternate; }
+        @keyframes shake { from { transform: translateX(-2px); } to { transform: translateX(2px); } }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; }
+        #log { width: 100%; max-width: 400px; height: 120px; background: #000; padding: 10px; font-size: 0.8rem; color: #2ecc71; overflow-y: auto; border: 1px solid #333; margin-top: 15px; border-radius: 5px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div class="sect-container">
-    <h1>วิถีแห่งเซียน</h1>
-    <div class="status-panel">
-        <div>🧧 สำนัก: <span id="sectName" style="color:#e67e22;">พเนจร</span></div>
-        <div>🌟 ระดับ: <span id="rank" style="color:#f1c40f;">รวบรวมปราณ ขั้น 1</span></div>
-        <div>❤️ เลือด (HP): <span id="hpText">100</span>/100</div>
-        <div class="hp-bar-bg"><div id="hp-bar"></div></div>
-        <div style="margin-top:5px;">🧪 ปราณบ่มเพาะ: <span id="exp">0</span> / 100</div>
+    <!-- 1. หน้า Login -->
+    <div id="login-screen" class="screen active">
+        <div class="login-box">
+            <h2 style="color:var(--red)">🏮 เข้าสู่ยุทธภพ</h2>
+            <input type="text" id="uid" placeholder="UID (ชื่อผู้ใช้งาน)">
+            <input type="password" id="pid" placeholder="PID (รหัสผ่าน)">
+            <button onclick="login()">เริ่มต้นการเดินทาง</button>
+            <p id="login-msg" style="font-size: 0.8rem; color: #888; margin-top: 10px;">*ใส่ชื่ออะไรก็ได้เพื่อเริ่มเกม</p>
+        </div>
     </div>
 
-    <div class="btn-grid">
-        <button class="btn-action" onclick="cultivate()">🧘 บ่มเพาะ</button>
-        <button class="btn-action" onclick="adventure()">⛰️ ท่องยุทธภพ</button>
-        <button class="btn-action btn-special" onclick="battle()">⚔️ ประลองยุทธ์</button>
-        <button class="btn-action btn-special" onclick="heal()">💊 กินยาทิพย์</button>
+    <!-- 2. หน้าหลักของเกม -->
+    <div id="game-screen" class="screen">
+        <div class="mini-map">
+            <div id="player-pos" class="player-dot" style="top: 50%; left: 50%;"></div>
+            <span style="font-size: 0.6rem; position: absolute; bottom: 5px; left: 30px; color: var(--gold);">MINI MAP</span>
+        </div>
+
+        <div class="game-header">
+            <div style="display:flex; justify-content: space-between;">
+                <span id="display-name" style="color:var(--gold)">จอมยุทธ์</span>
+                <span id="display-rank">รวบรวมปราณ ขั้น 1</span>
+            </div>
+            <div style="font-size: 0.8rem; margin-top: 5px;">เลือด (HP): <span id="hp-text">100</span>/100</div>
+            <div class="hp-bar-bg"><div id="hp-fill"></div></div>
+            <div style="font-size: 0.8rem; margin-top: 5px;">ปราณ (EXP): <span id="exp-text">0</span>/100</div>
+        </div>
+
+        <!-- โซนบอส -->
+        <div id="boss-area" class="boss-box">
+            <div style="color:var(--red); font-weight: bold;">🐲 บอสมังกรโลกันต์</div>
+            <div class="hp-bar-bg"><div id="boss-hp-fill"></div></div>
+            <div style="font-size: 0.7rem; text-align: right;" id="boss-hp-text">HP: 1000/1000</div>
+        </div>
+
+        <div class="btn-grid">
+            <button class="btn-action" onclick="action('cultivate')">🧘 บ่มเพาะ</button>
+            <button class="btn-action" onclick="action('move')">🚶 เดินสำรวจ</button>
+            <button class="btn-action" style="background:#2980b9" onclick="action('heal')">💊 กินยา</button>
+            <button class="btn-action" style="background:#d35400" onclick="toggleBoss()">🐉 ท้าทายบอส</button>
+            <button id="attack-btn" class="btn-action" style="display:none; grid-column: span 2; background:var(--red)" onclick="attackBoss()">⚔️ โจมตีมังกร!</button>
+        </div>
+
+        <div id="log">> ระบบพร้อมทำงาน...</div>
     </div>
 
-    <div id="event-log">📜 ยินดีต้อนรับจอมยุทธ์! เริ่มต้นการเดินทางได้...</div>
-</div>
+    <script>
+        let player = { name: "", hp: 100, maxHp: 100, exp: 0, rank: 1, atk: 15 };
+        let boss = { hp: 1000, maxHp: 1000, active: false };
 
-<script>
-    let hp = 100;
-    let maxHp = 100;
-    let exp = 0;
-    let rankLevel = 1;
-    let atk = 10;
-
-    function updateDisplay() {
-        document.getElementById('hpText').innerText = hp;
-        document.getElementById('exp').innerText = exp;
-        document.getElementById('rank').innerText = "รวบรวมปราณ ขั้น " + rankLevel;
-        let hpPercent = (hp / maxHp) * 100;
-        document.getElementById('hp-bar').style.width = hpPercent + "%";
-        // เปลี่ยนสีเลือดถ้าเหลือน้อย
-        document.getElementById('hp-bar').style.background = hpPercent < 30 ? "#e74c3c" : "#2ecc71";
-    }
-
-    function cultivate() {
-        if (hp <= 10) return addLog("❌ เลือดน้อยเกินไป บ่มเพาะไม่ได้!");
-        let gain = Math.floor(Math.random() * 10) + 5;
-        exp += gain;
-        addLog(`🧘 โคจรพลัง... ได้รับปราณ ${gain} หน่วย`);
-        if (exp >= 100) {
-            rankLevel++; exp = 0; atk += 5; maxHp += 20; hp = maxHp;
-            addLog(`⚡ เลื่อนระดับ! ขั้น ${rankLevel} พลังเพิ่มขึ้น!`);
+        function login() {
+            let uid = document.getElementById('uid').value;
+            let pid = document.getElementById('pid').value;
+            if(uid && pid) {
+                player.name = uid;
+                document.getElementById('display-name').innerText = "ท่านจอมยุทธ์ " + uid;
+                showScreen('game-screen');
+                addLog("ยินดีต้อนรับสู่โลกจอมยุทธ์ ท่าน " + uid);
+            } else {
+                alert("กรุณาใส่ UID และ PID");
+            }
         }
-        updateDisplay();
-    }
 
-    function battle() {
-        if (hp <= 20) return addLog("❌ เลือดน้อยเกินไป อย่าเพิ่งไปสู้เลย!");
-        let monsters = ["โจรป่า", "งูยักษ์", "ศิษย์สำนักมาร", "ลูกน้องมังกร"];
-        let m = monsters[Math.floor(Math.random() * monsters.length)];
-        let damage = Math.floor(Math.random() * 20) + 10;
-        hp -= damage;
-        if (hp < 0) hp = 0;
-        let winExp = 25;
-        exp += winExp;
-        addLog(`⚔️ ปะทะกับ [${m}]! ชนะได้รับปราณ ${winExp} แต่เสียเลือด ${damage}`);
-        updateDisplay();
-    }
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-    function heal() {
-        if (hp >= maxHp) return addLog("✨ เลือดเต็มอยู่แล้ว ไม่ต้องกินยา");
-        hp += 30;
-        if (hp > maxHp) hp = maxHp;
-        addLog(`💊 กินยาทิพย์... ฟื้นฟูเลือด 30 หน่วย`);
-        updateDisplay();
-    }
+        function action(type) {
+            if(type === 'cultivate') {
+                let gain = 20; player.exp += gain;
+                addLog(`🧘 บ่มเพาะพลัง... ได้รับปราณ ${gain}`);
+                if(player.exp >= 100) {
+                    player.rank++; player.exp = 0; player.maxHp += 50; player.hp = player.maxHp; player.atk += 10;
+                    addLog(`✨ เลื่อนระดับเป็นขั้น ${player.rank}! พลังโจมตีเพิ่มขึ้น!`);
+                }
+            } else if(type === 'move') {
+                let x = Math.random() * 90; let y = Math.random() * 90;
+                document.getElementById('player-pos').style.left = x + "%";
+                document.getElementById('player-pos').style.top = y + "%";
+                addLog("🚶 คุณเดินสำรวจไปยังทิศทางใหม่...");
+            } else if(type === 'heal') {
+                player.hp = player.maxHp;
+                addLog("💊 กินยาทิพย์... เลือดเต็ม!");
+            }
+            updateUI();
+        }
 
-    function adventure() {
-        let events = [
-            "👣 เดินชมวิวเฉยๆ ไม่เจออะไร",
-            "🍎 เจอผลไม้เซียน! ได้รับปราณ 15 หน่วย",
-            "💰 เจอถุงเงินเก่าๆ เก็บได้ 5 Gold"
-        ];
-        let ev = events[Math.floor(Math.random() * events.length)];
-        if (ev.includes("ปราณ")) exp += 15;
-        addLog(ev);
-        updateDisplay();
-    }
+        function toggleBoss() {
+            boss.active = !boss.active;
+            document.getElementById('boss-area').style.display = boss.active ? 'block' : 'none';
+            document.getElementById('attack-btn').style.display = boss.active ? 'block' : 'none';
+            if(boss.active) addLog("⚠️ มังกรโลกันต์ปรากฏตัว! เตรียมตัวตาย!");
+        }
 
-    function addLog(msg) {
-        let log = document.getElementById('event-log');
-        log.innerHTML = `> ${msg}<br>` + log.innerHTML;
-    }
-</script>
+        function attackBoss() {
+            // Player attacks Boss
+            boss.hp -= player.atk;
+            addLog(`⚔️ คุณสร้างความเสียหาย ${player.atk} แก่มังกร!`);
+            
+            // Boss attacks Player
+            let bossDmg = 25;
+            player.hp -= bossDmg;
+            addLog(`🔥 มังกรพ่นไฟใส่คุณ! เสียเลือด ${bossDmg}`);
 
+            if(boss.hp <= 0) {
+                addLog("🎉 ตำนาน! คุณสังหารมังกรสำเร็จ!");
+                boss.hp = 0; boss.active = false; toggleBoss();
+            }
+            if(player.hp <= 0) {
+                player.hp = 0;
+                alert("💀 คุณสิ้นใจในสนามรบ... โปรดพักผ่อน");
+                location.reload();
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('hp-text').innerText = player.hp;
+            document.getElementById('hp-fill').style.width = (player.hp/player.maxHp)*100 + "%";
+            document.getElementById('exp-text').innerText = player.exp;
+            document.getElementById('display-rank').innerText = "รวบรวมปราณ ขั้น " + player.rank;
+            
+            document.getElementById('boss-hp-text').innerText = `HP: ${boss.hp}/${boss.maxHp}`;
+            document.getElementById('boss-hp-fill').style.width = (boss.hp/boss.maxHp)*100 + "%";
+        }
+
+        function addLog(msg) {
+            let log = document.getElementById('log');
+            log.innerHTML = `> ${msg}<br>` + log.innerHTML;
+        }
+    </script>
 </body>
 </html>
