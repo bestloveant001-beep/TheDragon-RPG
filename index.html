@@ -3,117 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Dragon RPG - ระบบเซฟพลังเซียน</title>
+    <title>The Dragon RPG - ระบบแยกไฟล์สมบูรณ์</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 1. หน้าโหลด (Loading Screen) แบบมีแถบ % -->
     <div id="loading-screen" class="screen active">
         <h2 style="color:var(--gold)">🐉 THE DRAGON RPG</h2>
-        <div id="loader">กำลังรวบรวมลมปราณ... <span id="load-pc">0%</span></div>
-        <div class="bar-bg" style="width: 80%;"><div id="load-fill" style="width: 0%; height: 100%; background: var(--gold);"></div></div>
+        <div id="loader">กำลังเชื่อมต่อฐานข้อมูลสำนัก... <span id="load-pc">0%</span></div>
     </div>
 
-    <!-- 2. หน้าล็อคอิน (Login Screen) -->
     <div id="login-screen" class="screen">
-        <h1 style="color:var(--red)">ยินดีต้อนรับกลับมา</h1>
+        <h1 style="color:var(--red)">เข้าสู่ยุทธภพ</h1>
         <div class="login-box">
-            <p id="save-msg" style="font-size:0.8rem; color:var(--gold); display:none;">✨ พบข้อมูลเซียนเก่าในเครื่อง!</p>
-            <input type="text" id="uid" placeholder="ระบุ UID ของท่าน">
-            <input type="password" id="pid" placeholder="ระบุ PID ลับ">
-            <button style="background:var(--red); width:100%" onclick="login()">เข้าสู่ยุทธภพ</button>
-            <button style="background:#555; width:100%; margin-top:10px; font-size:0.7rem;" onclick="clearSave()">ล้างข้อมูลเซฟใหม่</button>
+            <input type="text" id="uid" placeholder="UID (ชื่อผู้ใช้งาน)">
+            <input type="password" id="pid" placeholder="PID (รหัสผ่าน)">
+            <button onclick="handleAuth()" style="background:var(--red); width:100%">ยืนยันตัวตน</button>
         </div>
     </div>
 
-    <!-- 3. หน้าเกมหลัก (Game Screen) -->
     <div id="game-screen" class="screen">
         <div class="status-box">
-            <div style="display:flex; justify-content:space-between">
-                <h2 id="p-name" style="color:var(--gold); margin:0;">จอมยุทธ์</h2>
-                <span id="p-rank-text" style="color:var(--red)">ขั้น 1</span>
-            </div>
-            <div style="font-size:0.8rem; margin-top:5px;">ปราณสะสม: <span id="p-exp">0</span>/100</div>
+            <h2 id="p-name" style="color:var(--gold); margin:0;">จอมยุทธ์</h2>
+            <span id="p-admin-tag" style="color:#e74c3c; font-weight:bold; display:none;">[ADMIN]</span>
+            <div style="color:#2ecc71">💰 ทอง: <span id="p-coin">0</span> Gold</div>
+            <div id="p-rank-text">ระดับ: ขั้น 1</div>
             <div class="bar-bg"><div id="exp-bar" style="width:0%; height:100%; background:var(--blue);"></div></div>
         </div>
-        
         <div class="grid">
-            <button style="background:var(--gold); color:black;" onclick="train()">🧘 บ่มเพาะพลัง</button>
-            <button style="background:var(--blue);" onclick="saveGame()">💾 บันทึกพลังเซียน</button>
+            <button style="background:var(--gold); color:black;" onclick="train()">🧘 บ่มเพาะ</button>
+            <button style="background:var(--blue);" onclick="openShop()">🛒 ร้านค้า</button>
+            <button style="background:var(--purple);" onclick="toggleAdmin()">🛠️ แอดมิน</button>
         </div>
-        <div id="log">> ระบบเซฟพลังพร้อมใช้งาน</div>
+        <div id="log">> ระบบพร้อม...</div>
     </div>
 
+    <!-- หน้าต่างร้านค้า -->
+    <div id="overlay" class="overlay" onclick="closeShop()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99;"></div>
+    <div id="shop-modal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; background:#111; border:2px solid var(--gold); padding:20px; z-index:100; border-radius:15px;">
+        <h3 style="color:var(--gold)">🛒 ร้านค้าเซียน</h3>
+        <button onclick="buyItem('medicine', 100)" style="width:100%; margin-bottom:5px;">ซื้อยาทิพย์ (100 G)</button>
+        <button onclick="closeShop()" style="width:100%; background:#555;">ปิด</button>
+    </div>
+
+    <!-- แผงแอดมิน -->
+    <div id="admin-panel" style="display:none; background:#222; border:1px solid red; padding:10px; margin-top:10px; width:100%;">
+        <button onclick="addCoin(5000)">+5000 ทอง</button>
+    </div>
+
+    <!-- เรียกใช้ไฟล์ระบบหลัก -->
+    <script src="script.js"></script> 
     <script>
-        let p = { name: "", rank: 1, exp: 0 };
-
-        // --- ระบบ Loading แบบเปอร์เซ็นต์ ---
-        let loadPc = 0;
-        let loadInterval = setInterval(() => {
-            loadPc += Math.floor(Math.random() * 10) + 5;
-            if(loadPc >= 100) {
-                loadPc = 100;
-                clearInterval(loadInterval);
-                checkSave(); // โหลดเสร็จแล้วไปเช็คเซฟต่อ
+        // โหลดหน้าจอ
+        let lp = 0;
+        let iv = setInterval(() => {
+            lp += 20;
+            document.getElementById('load-pc').innerText = lp + "%";
+            if(lp >= 100) { 
+                clearInterval(iv);
+                document.getElementById('loading-screen').classList.remove('active');
+                document.getElementById('login-screen').classList.add('active');
             }
-            document.getElementById('load-pc').innerText = loadPc + "%";
-            document.getElementById('load-fill').style.width = loadPc + "%";
-        }, 150);
-
-        // --- ระบบ Save/Load (Local Storage) ---
-        function checkSave() {
-            let savedData = localStorage.getItem('dragon_rpg_save');
-            if(savedData) {
-                p = JSON.parse(savedData);
-                document.getElementById('uid').value = p.name;
-                document.getElementById('save-msg').style.display = 'block';
-                addLog(`✨ พบข้อมูลเก่า: ท่าน ${p.name} (ขั้น ${p.rank})`);
-            }
-            document.getElementById('loading-screen').classList.remove('active');
-            document.getElementById('login-screen').classList.add('active');
-        }
-
-        function login() {
-            let u = document.getElementById('uid').value;
-            if(u) {
-                p.name = u;
-                updateUI();
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('game-screen').classList.add('active');
-                addLog(`🐉 ท่าน ${p.name} เข้าสู่โลกจอมยุทธ์แล้ว!`);
-            } else { alert("กรุณาใส่ชื่อ!"); }
-        }
+        }, 200);
 
         function train() {
             p.exp += 25;
-            if(p.exp >= 100) { p.rank++; p.exp = 0; addLog(`⚡ เลื่อนระดับเป็นขั้น ${p.rank}!`); }
+            p.coin += 50;
+            if(p.exp >= 100) { p.rank++; p.exp = 0; }
             updateUI();
-            saveGame(); // เซฟให้อัตโนมัติทุกครั้งที่เก่งขึ้น
-        }
-
-        function saveGame() {
-            localStorage.setItem('dragon_rpg_save', JSON.stringify(p));
-            addLog("💾 บันทึกพลังเซียนลงในคัมภีร์เรียบร้อย!");
-        }
-
-        function clearSave() {
-            if(confirm("ท่านต้องการล้างพลังทั้งหมดเพื่อเริ่มใหม่ใช่หรือไม่?")) {
-                localStorage.removeItem('dragon_rpg_save');
-                location.reload();
-            }
-        }
-
-        function updateUI() {
-            document.getElementById('p-name').innerText = "ท่าน " + p.name;
-            document.getElementById('p-rank-text').innerText = "ขั้น " + p.rank;
-            document.getElementById('p-exp').innerText = p.exp;
-            document.getElementById('exp-bar').style.width = p.exp + "%";
-        }
-
-        function addLog(msg) {
-            let log = document.getElementById('log');
-            log.innerHTML = `> ${msg}<br>` + log.innerHTML;
+            saveData();
+            addLog("🧘 บ่มเพาะสำเร็จ!");
         }
     </script>
 </body>
