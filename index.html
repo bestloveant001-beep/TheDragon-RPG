@@ -1,25 +1,12 @@
-<!-- เพิ่มในหน้า Game Screen ต่อจากปุ่มเดิม -->
-<div class="status-box" style="border-color: #3498db; margin-top: 10px;">
-    <div style="font-size: 0.8rem;">🏰 ตำหนักปัจจุบัน: <span id="p-mansion" style="color:#3498db">เพิงพักไม้</span></div>
-</div>
+<!-- เพิ่มปุ่ม "ออกผจญภัย" เพื่อสุ่มเหตุการณ์ -->
+<button style="background:#27ae60; grid-column: span 2;" onclick="triggerScenario()">🎲 ออกผจญภัย (สุ่มสถานการณ์)</button>
 
-<!-- ส่วน World Boss UI (ซ่อนไว้ก่อน) -->
-<div id="world-boss-ui" style="display:none; background:rgba(255,0,0,0.1); border:2px solid red; padding:10px; border-radius:10px; margin-bottom:10px; animation: pulse 2s infinite;">
-    <div style="color:red; font-weight:bold; text-align:center;">🔥 WORLD BOSS: เทพมังกรบรรพกาล 🔥</div>
-    <div class="bar-bg"><div id="boss-bar" style="width:100%; height:100%; background:red;"></div></div>
-    <div id="boss-hp-text" style="font-size:0.7rem; text-align:center;">HP: 50000/50000</div>
-    <button onclick="attackWorldBoss()" style="width:100%; background:red; margin-top:5px;">รุมโจมตี!</button>
-</div>
-
-<div class="grid">
-    <button style="background:#2c3e50;" onclick="document.getElementById('mansion-modal').style.display='block'">🏰 ซื้อตำหนัก</button>
-    <button style="background:#e74c3c;" onclick="spawnWorldBoss()">🐲 เรียกบอส (Admin)</button>
-</div>
-
-<!-- Modal เลือกซื้อตำหนัก -->
-<div id="mansion-modal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:85%; background:#111; border:2px solid #3498db; padding:20px; z-index:1000; border-radius:15px;">
-    <h3 style="color:#3498db">🏰 เลือกซื้อที่พำนักเซียน</h3>
-    <button onclick="buyMansion('ตำหนักเมฆา', 500000, 5)" style="width:100%; margin-bottom:5px;">ตำหนักเมฆา (5แสน G / +5 EXP อัตโนมัติ)</button>
-    <button onclick="buyMansion('วังมังกรทอง', 2000000, 20)" style="width:100%; margin-bottom:5px;">วังมังกรทอง (2ล้าน G / +20 EXP อัตโนมัติ)</button>
-    <button onclick="document.getElementById('mansion-modal').style.display='none'" style="width:100%; background:#555;">ปิด</button>
+<!-- หน้าต่างสถานการณ์จำลอง (Scenario Modal) -->
+<div id="scenario-modal" class="scenario-box">
+    <div id="scenario-img" class="scenario-img">🐲</div>
+    <h2 id="scenario-title" style="color:var(--gold); margin:0;">สถานการณ์</h2>
+    <p id="scenario-desc" class="scenario-text">เกิดเหตุการณ์ประหลาดขึ้น...</p>
+    <div id="scenario-choices">
+        <!-- ปุ่มทางเลือกจะถูกสร้างที่นี่จาก JS -->
+    </div>
 </div>
