@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>วิถีแห่งเซียน - The Dragon RPG</title>
+    <style>
+        body { margin: 0; background-color: #0d0d0d; color: #f1c40f; font-family: 'Sarabun', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1000'); background-size: cover; }
+        .sect-container { text-align: center; border: 3px double #d35400; padding: 30px; background: rgba(20, 20, 20, 0.9); border-radius: 10px; box-shadow: 0 0 25px #d35400; width: 90%; max-width: 450px; }
+        h1 { font-size: 2.5rem; color: #e74c3c; text-shadow: 2px 2px #000; margin-bottom: 5px; }
+        .status-panel { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #d35400; margin-bottom: 20px; text-align: left; }
+        .btn-action { width: 100%; padding: 12px; margin: 5px 0; background: #96281b; color: white; border: 1px solid #f1c40f; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        #event-log { height: 120px; background: #000; padding: 10px; font-size: 0.85rem; color: #2ecc71; overflow-y: auto; border-radius: 5px; margin-top: 15px; text-align: left; }
+    </style>
+</head>
+<body>
+<div class="sect-container">
+    <h1>วิถีแห่งเซียน</h1>
+    <div class="status-panel">
+        <div>🧧 สำนัก: <span id="sectName" style="color:#e67e22;">พเนจร</span></div>
+        <div>🌟 ระดับ: <span id="rank" style="color:#f1c40f;">รวบรวมปราณ ขั้น 1</span></div>
+        <div>🧪 ปราณบ่มเพาะ: <span id="exp">0</span> / 100</div>
+    </div>
+    <button class="btn-action" onclick="cultivate()">🧘 บ่มเพาะพลังปราณ</button>
+    <button class="btn-action" onclick="adventure()">⛰️ ออกท่องยุทธภพ</button>
+    <div id="event-log">📜 เริ่มต้นการเดินทางของจอมยุทธ์...</div>
+</div>
+<script>
+    let exp = 0; let rankLevel = 1; let sect = "พเนจร";
+    function updateDisplay() {
+        document.getElementById('exp').innerText = exp;
+        document.getElementById('rank').innerText = "รวบรวมปราณ ขั้น " + rankLevel;
+    }
+    function cultivate() {
+        let gain = Math.floor(Math.random() * 15) + 5;
+        exp += gain;
+        addLog(`🧘 คุณโคจรพลัง... ได้รับปราณ ${gain} หน่วย`);
+        if (exp >= 100) { rankLevel++; exp = 0; addLog(`⚡ เลื่อนระดับ! ตอนนี้คุณอยู่ขั้น ${rankLevel} แล้ว!`); }
+        updateDisplay();
+    }
+    function adventure() {
+        addLog(`👣 คุณเดินหลงป่า แต่โชคดีที่เก็บสมุนไพรวิเศษได้ (+10 EXP)`);
+        exp += 10; updateDisplay();
+    }
+    function addLog(msg) {
+        let log = document.getElementById('event-log');
+        log.innerHTML = `> ${msg}<br>` + log.innerHTML;
+    }
+</script>
+</body>
+</html>
